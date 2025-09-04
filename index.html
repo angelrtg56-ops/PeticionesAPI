@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Peticiones de Oración</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-deep: #3C4257;
+            --primary-light: #5C677D;
+            --accent-mint: #A0E7E5;
+            --accent-peach: #FFB7B2;
+            --background-light: #F8F8F8;
+            --text-dark: #2C2C2C;
+            --white: #FFFFFF;
+            --border-radius-card: 16px;
+            --border-radius-input: 8px;
+            --box-shadow-subtle: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            background-color: var(--white);
+            border-radius: var(--border-radius-card);
+            box-shadow: var(--box-shadow-subtle);
+            padding: 45px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.8em;
+            color: var(--primary-deep);
+            margin-bottom: 30px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        label {
+            font-weight: 600;
+            text-align: left;
+            color: var(--primary-light);
+            font-size: 1.05em;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius-input);
+            font-size: 1em;
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+            box-sizing: border-box;
+            color: var(--text-dark);
+            background-color: var(--background-light);
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: var(--accent-mint);
+            box-shadow: 0 0 0 3px rgba(160, 231, 229, 0.4);
+            outline: none;
+            background-color: var(--white);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        button {
+            padding: 18px 35px;
+            background-color: var(--primary-deep);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius-input);
+            font-size: 1.15em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+            letter-spacing: 0.02em;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+            background-color: var(--accent-mint);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px;
+                margin: 15px;
+            }
+
+            h2 {
+                font-size: 2em;
+                margin-bottom: 25px;
+            }
+
+            button {
+                padding: 15px 25px;
+                font-size: 1.1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Envía tu Petición de Oración 🙏</h2>
+        <form id="peticionForm">
+            <label for="peticionTexto">Tu Petición:</label>
+            <textarea id="peticionTexto" required></textarea>
+
+            <label for="nombreOpcional">Tu Nombre (opcional):</label>
+            <input type="text" id="nombreOpcional">
+
+            <button type="submit">Enviar Petición</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('peticionForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const peticion = {
+                PeticionTexto: document.getElementById('peticionTexto').value,
+                NombreOpcional: document.getElementById('nombreOpcional').value || null
+            };
+
+            fetch('http://localhost:5105/api/Peticiones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(peticion)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('¡Petición enviada con éxito! Se ha añadido a nuestra lista de oración.');
+                    document.getElementById('peticionForm').reset();
+                } else {
+                    response.text().then(text => {
+                        console.error('Error del servidor:', text);
+                        alert('Ocurrió un error al enviar la petición. Por favor, inténtalo de nuevo. Detalles: ' + text);
+                    }).catch(err => {
+                        console.error('Error al leer la respuesta del servidor:', err);
+                        alert('Ocurrió un error al enviar la petición. Por favor, inténtalo de nuevo.');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error de red o CORS:', error);
+                alert('Ocurrió un error de conexión. Por favor, revisa la consola del navegador y asegúrate de que el servidor esté activo.');
+            });
+        });
+    </script>
+</body>
+
+</html>
